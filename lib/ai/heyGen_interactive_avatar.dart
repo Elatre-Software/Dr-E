@@ -1,374 +1,3 @@
-// import 'dart:convert';
-// import 'dart:typed_data';
-// import 'dart:async';
-// import 'package:flutter/material.dart';
-// import 'package:flutter_application_1/constants/images.dart';
-// import 'package:flutter_application_1/widgets/widgets.dart';
-// import 'package:flutter_dotenv/flutter_dotenv.dart';
-// import 'package:livekit_client/livekit_client.dart';
-// import 'package:http/http.dart' as http;
-// import 'package:flutter_webrtc/flutter_webrtc.dart' as rtc;
-// import 'package:web_socket_channel/web_socket_channel.dart';
-// import 'package:flutter_sound/flutter_sound.dart';
-// import 'package:permission_handler/permission_handler.dart';
-
-// class HeyGenHomePage extends StatefulWidget {
-//   const HeyGenHomePage({super.key});
-
-//   @override
-//   State<HeyGenHomePage> createState() => _HeyGenHomePageState();
-// }
-
-// class _HeyGenHomePageState extends State<HeyGenHomePage> {
-//   final _scrollController = ScrollController();
-//   final List<Map<String, String>> _messages = [];
-
-//   String? _sessionId;
-//   Room? _room;
-//   RemoteVideoTrack? _videoTrack;
-//   bool _isSessionActive = false;
-//   bool _micEnabled = true;
-//   bool isSocketReady = false;
-
-//   WebSocketChannel? _channel;
-//   final _recorder = FlutterSoundRecorder();
-//   late StreamController<Uint8List> _audioStreamController;
-
-//   final apiToken = dotenv.env['HEYGEN_API_KEY'] ?? '';
-//   final elevenLabsApiKey = dotenv.env['ELEVENLABS_API_KEY'] ?? '';
-//   final heyGenVoiceID = dotenv.env['HEYGEN_VOICE_ID'] ?? 'EXAVITQu4vr4xnSDxMaL';
-//   final String agentId =
-//       dotenv.env['ELEVENLABS_AGENT_ID'] ?? 'EXAVITQu4vr4xnSDxMaL';
-
-//   @override
-//   void initState() {
-//     super.initState();
-//     _startSession().then((_) {
-//       _connectWebSocket();
-//       _greetUser();
-//     });
-//   }
-
-//   Future<void> _connectWebSocket() async {
-//     try {
-//       final url = Uri.parse(
-//         'https://api.elevenlabs.io/v1/convai/conversation/get-signed-url?agent_id=$agentId',
-//       );
-//       final headers = {'xi-api-key': elevenLabsApiKey};
-//       final response = await http.get(url, headers: headers);
-
-//       if (response.statusCode != 200) {
-//         debugPrint('Failed to get signed URL: ${response.body}');
-//         return;
-//       }
-
-//       final data = jsonDecode(response.body);
-//       final signedUrl = data['signed_url'];
-//       if (signedUrl == null) {
-//         debugPrint('No signed_url received.');
-//         return;
-//       }
-
-//       debugPrint('Connecting to WebSocket: $signedUrl');
-//       _channel = WebSocketChannel.connect(Uri.parse(signedUrl));
-
-//       _channel!.sink.add(jsonEncode({'agent_id': agentId}));
-
-//       _channel!.stream.listen(
-//         (data) async {
-//           debugPrint('WebSocket received: $data');
-//           try {
-//             final response = jsonDecode(data);
-
-//             if (response['type'] == 'ping') return;
-
-//             if (response['event'] == 'ready') {
-//               debugPrint('WebSocket is ready for messages');
-//               setState(() => isSocketReady = true);
-//               return;
-//             }
-
-//             String? aiText =
-//                 response['agent_response_event']?['agent_response'] ??
-//                 response['agent_response'] ??
-//                 response['text'];
-
-//             if (aiText != null && aiText.trim().isNotEmpty) {
-//               _handleAIResponse(aiText.trim());
-//             }
-//           } catch (e) {
-//             debugPrint('Error decoding WebSocket message: $e');
-//           }
-//         },
-//         onError: (error) => debugPrint('WebSocket error: $error'),
-//         onDone: () => debugPrint('WebSocket closed'),
-//       );
-//     } catch (e) {
-//       debugPrint('Exception while connecting WebSocket: $e');
-//     }
-//   }
-
-//   Future<void> _greetUser() async {
-//     // const greeting =
-//     //     'Hello! I am Dr., your friendly dental assistant. How can I help you today?';
-//     // _handleAIResponse(greeting);
-//     if (_micEnabled) _startRecording();
-//   }
-
-//   Future<void> _startRecording() async {
-//     await Permission.microphone.request();
-//     await _recorder.openRecorder();
-//     _audioStreamController = StreamController<Uint8List>();
-
-//     _audioStreamController.stream.listen((buffer) {
-//       if (buffer.isNotEmpty) {
-//         final message = jsonEncode({"user_audio_chunk": base64Encode(buffer)});
-//         _channel?.sink.add(message);
-//       }
-//     });
-
-//     await _recorder.startRecorder(
-//       codec: Codec.pcm16,
-//       sampleRate: 16000,
-//       numChannels: 1,
-//       toStream: _audioStreamController.sink,
-//     );
-//   }
-
-//   Future<void> _stopRecording() async {
-//     await _recorder.stopRecorder();
-//     _channel?.sink.add(
-//       jsonEncode({"type": "user_audio_chunk", "audio": null, "is_final": true}),
-//     );
-//   }
-
-//   void _handleAIResponse(String aiReply) async {
-//     setState(() {
-//       _messages.add({'sender': 'avatar', 'text': aiReply});
-//     });
-//     try {
-//       await _sendTextToAvatar(aiReply);
-//     } catch (e) {
-//       debugPrint('Error sending to HeyGen: \$e');
-//     }
-//     _scrollToBottom();
-//   }
-
-//   Future<void> _startSession() async {
-//     final session = await _createHeyGenSession();
-//     _sessionId = session['session_id'];
-//     final liveKitUrl = session['url'];
-//     final liveKitToken = session['access_token'];
-
-//     await _startHeyGenSession();
-//     _room = await _connectToLiveKitRoom(liveKitUrl, liveKitToken);
-//     _room!.events.listen((event) {
-//       if (event is TrackSubscribedEvent) {
-//         final track = event.track;
-//         if (track is RemoteVideoTrack && mounted) {
-//           setState(() => _videoTrack = track);
-//         }
-//       }
-//     });
-//     setState(() => _isSessionActive = true);
-//   }
-
-//   Future<Map<String, dynamic>> _createHeyGenSession() async {
-//     final response = await http.post(
-//       Uri.parse('https://api.heygen.com/v1/streaming.new'),
-//       headers: {
-//         'Content-Type': 'application/json',
-//         'Authorization': 'Bearer $apiToken',
-//         'x-api-key': apiToken,
-//       },
-//       body: jsonEncode({
-//         'version': 'v2',
-//         'quality': 'medium',
-//         'avatar_id': 'Katya_Chair_Sitting_public',
-//         'voice': {'voice_id': heyGenVoiceID},
-//       }),
-//     );
-//     final json = jsonDecode(response.body);
-//     if (response.statusCode == 200 && json['data'] != null) {
-//       return json['data'];
-//     } else {
-//       throw Exception('Session creation failed: ${response.body}');
-//     }
-//   }
-
-//   Future<void> _startHeyGenSession() async {
-//     final response = await http.post(
-//       Uri.parse('https://api.heygen.com/v1/streaming.start'),
-//       headers: {'Content-Type': 'application/json', 'x-api-key': apiToken},
-//       body: jsonEncode({'session_id': _sessionId}),
-//     );
-//     if (response.statusCode != 200) {
-//       throw Exception('Failed to start session: ${response.body}');
-//     }
-//   }
-
-//   Future<Room> _connectToLiveKitRoom(String url, String token) async {
-//     final room = Room();
-//     await room.connect(url, token);
-//     return room;
-//   }
-
-//   Future<void> _sendTextToAvatar(String text) async {
-//     if (_sessionId == null) return;
-//     try {
-//       final response = await http.post(
-//         Uri.parse('https://api.heygen.com/v1/streaming.task'),
-//         headers: {'Content-Type': 'application/json', 'x-api-key': apiToken},
-//         body: jsonEncode({'session_id': _sessionId, 'text': text}),
-//       );
-//       if (response.statusCode != 200) {
-//         debugPrint('Failed to send text to avatar: \${response.body}');
-//       }
-//     } catch (e) {
-//       debugPrint('Exception sending text to avatar: \$e');
-//     }
-//   }
-
-//   void _scrollToBottom() {
-//     _scrollController.animateTo(
-//       _scrollController.position.maxScrollExtent,
-//       duration: const Duration(milliseconds: 300),
-//       curve: Curves.easeOut,
-//     );
-//   }
-
-//   Widget _buildVideoWidget() {
-//     if (!_isSessionActive) {
-//       return const Center(child: CircularProgressIndicator());
-//     }
-//     if (_videoTrack == null) {
-//       return const SizedBox();
-//     }
-//     return Container(
-//       margin: const EdgeInsets.all(15),
-//       child: ClipRRect(
-//         borderRadius: BorderRadius.circular(15),
-//         child: VideoTrackRenderer(
-//           _videoTrack!,
-//           fit: rtc.RTCVideoViewObjectFit.RTCVideoViewObjectFitCover,
-//         ),
-//       ),
-//     );
-//   }
-
-//   @override
-//   Widget build(BuildContext context) {
-//     return SafeArea(
-//       child: Scaffold(
-//         body: Column(
-//           children: [
-//             Expanded(child: Center(child: _buildVideoWidget())),
-//             Expanded(
-//               child: ListView.builder(
-//                 controller: _scrollController,
-//                 itemCount: _messages.length,
-//                 itemBuilder: (context, index) {
-//                   final msg = _messages[index];
-//                   final isUser = msg['sender'] == 'user';
-//                   return Align(
-//                     alignment: isUser
-//                         ? Alignment.centerRight
-//                         : Alignment.centerLeft,
-//                     child: Container(
-//                       padding: const EdgeInsets.symmetric(
-//                         vertical: 10,
-//                         horizontal: 16,
-//                       ),
-//                       margin: const EdgeInsets.symmetric(vertical: 4),
-//                       decoration: BoxDecoration(
-//                         color: isUser ? Colors.blue : Colors.grey[200],
-//                         borderRadius: BorderRadius.only(
-//                           topLeft: const Radius.circular(16),
-//                           topRight: const Radius.circular(16),
-//                           bottomLeft: Radius.circular(isUser ? 16 : 0),
-//                           bottomRight: Radius.circular(isUser ? 0 : 16),
-//                         ),
-//                       ),
-//                       child: Text(
-//                         msg['text'] ?? '',
-//                         style: TextStyle(
-//                           color: isUser ? Colors.white : Colors.black87,
-//                           fontSize: 16,
-//                         ),
-//                       ),
-//                     ),
-//                   );
-//                 },
-//               ),
-//             ),
-//             Container(
-//               margin: const EdgeInsets.only(left: 10, right: 10),
-//               padding: const EdgeInsets.all(20),
-//               child: Row(
-//                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
-//                 children: [
-//                   CommonWidgets.customButton(
-//                     assetIconPath: AppAssets.uploadIcon,
-//                     onPressed: () {},
-//                     label: 'Upload',
-//                   ),
-//                   CommonWidgets.AppRoundedIconButton(
-//                     onPressed: () {},
-//                     label: 'Start New Diagnosis',
-//                     assetPath: AppAssets.searchIcon,
-//                   ),
-//                 ],
-//               ),
-//             ),
-//             Padding(
-//               padding: const EdgeInsets.all(20),
-//               child: Row(
-//                 children: [
-//                   Expanded(
-//                     child: TextField(
-//                       enabled: !_micEnabled,
-//                       // controller: _textController,
-//                       decoration: InputDecoration(
-//                         hintText: 'Say or type a clinical command...',
-//                         border: OutlineInputBorder(
-//                           borderRadius: BorderRadius.circular(15),
-//                         ),
-//                       ),
-//                       // onSubmitted: (_) => _sendText(),
-//                     ),
-//                   ),
-//                   IconButton(
-//                     icon: Icon(
-//                       _micEnabled ? Icons.mic : Icons.mic_off,
-//                       color: Colors.blue,
-//                     ),
-//                     onPressed: () async {
-//                       if (_recorder.isRecording) {
-//                         await _stopRecording();
-//                       } else {
-//                         await _startRecording();
-//                       }
-//                       setState(() => _micEnabled = !_micEnabled);
-//                     },
-//                   ),
-//                 ],
-//               ),
-//             ),
-//           ],
-//         ),
-//       ),
-//     );
-//   }
-
-//   @override
-//   void dispose() {
-//     _recorder.closeRecorder();
-//     _audioStreamController.close();
-//     _channel?.sink.close();
-//     super.dispose();
-//   }
-// }
-
 import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
@@ -506,6 +135,8 @@ class _HeyGenHomePageState extends State<HeyGenHomePage> {
     if (_isSessionActive && isSocketReady) {
       final message = jsonEncode({"user_message": textMessage});
       _channel?.sink.add(message);
+    } else {
+      debugPrint('❌ Cannot send: Session inactive or socket not ready.');
     }
   }
 
@@ -562,7 +193,7 @@ class _HeyGenHomePageState extends State<HeyGenHomePage> {
       body: jsonEncode({
         'version': 'v2',
         'quality': 'medium',
-        'avatar_id': 'Katya_Chair_Sitting_public',
+        'avatar_id': '2382f04c12af45cba82b53d1a60f9091',
         'voice': {'voice_id': heyGenVoiceID},
       }),
     );
@@ -646,41 +277,44 @@ class _HeyGenHomePageState extends State<HeyGenHomePage> {
           children: [
             Expanded(child: Center(child: _buildVideoWidget())),
             Expanded(
-              child: ListView.builder(
-                controller: _scrollController,
-                itemCount: _messages.length,
-                itemBuilder: (context, index) {
-                  final msg = _messages[index];
-                  final isUser = msg['sender'] == 'user';
-                  return Align(
-                    alignment: isUser
-                        ? Alignment.centerRight
-                        : Alignment.centerLeft,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        vertical: 10,
-                        horizontal: 16,
-                      ),
-                      margin: const EdgeInsets.symmetric(vertical: 4),
-                      decoration: BoxDecoration(
-                        color: isUser ? Colors.blue : Colors.grey[200],
-                        borderRadius: BorderRadius.only(
-                          topLeft: const Radius.circular(16),
-                          topRight: const Radius.circular(16),
-                          bottomLeft: Radius.circular(isUser ? 16 : 0),
-                          bottomRight: Radius.circular(isUser ? 0 : 16),
+              child: Padding(
+                padding: const EdgeInsets.all(15),
+                child: ListView.builder(
+                  controller: _scrollController,
+                  itemCount: _messages.length,
+                  itemBuilder: (context, index) {
+                    final msg = _messages[index];
+                    final isUser = msg['sender'] == 'user';
+                    return Align(
+                      alignment: isUser
+                          ? Alignment.centerRight
+                          : Alignment.centerLeft,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          vertical: 10,
+                          horizontal: 16,
+                        ),
+                        margin: const EdgeInsets.symmetric(vertical: 4),
+                        decoration: BoxDecoration(
+                          color: isUser ? Colors.blue : Colors.grey[200],
+                          borderRadius: BorderRadius.only(
+                            topLeft: const Radius.circular(16),
+                            topRight: const Radius.circular(16),
+                            bottomLeft: Radius.circular(isUser ? 16 : 0),
+                            bottomRight: Radius.circular(isUser ? 0 : 16),
+                          ),
+                        ),
+                        child: Text(
+                          msg['text'] ?? '',
+                          style: TextStyle(
+                            color: isUser ? Colors.white : Colors.black87,
+                            fontSize: 16,
+                          ),
                         ),
                       ),
-                      child: Text(
-                        msg['text'] ?? '',
-                        style: TextStyle(
-                          color: isUser ? Colors.white : Colors.black87,
-                          fontSize: 16,
-                        ),
-                      ),
-                    ),
-                  );
-                },
+                    );
+                  },
+                ),
               ),
             ),
             Container(
