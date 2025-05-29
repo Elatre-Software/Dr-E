@@ -18,20 +18,23 @@ class CommonWidgets {
 
   static Widget customButton({
     required VoidCallback? onPressed,
-    String label = 'Button',
+    required String label,
+    String? assetIconPath, // <-- asset icon path
+    double iconSize = 24.0,
     double size = 16.0,
-    // IconData icon = Icons.check,
+    double height = 50.0,
+    double width = 130.0,
     Color backgroundColor = AppColors.buttonColor,
-    Color textColor = AppColors.primaryColor,
-    fontWeight = FontWeight.bold,
+    Color textColor = AppColors.background,
+    FontWeight fontWeight = FontWeight.bold,
   }) {
     return SizedBox(
-      width: 160,
-      height: 60,
+      width: width,
+      height: height,
       child: ElevatedButton.icon(
-        style: ElevatedButton.styleFrom(backgroundColor: backgroundColor),
-        onPressed: onPressed,
-        // icon: Icon(icon, color: textColor),
+        icon: assetIconPath != null
+            ? Image.asset(assetIconPath, width: iconSize, height: iconSize)
+            : const SizedBox.shrink(), // fallback if no icon is passed
         label: Text(
           label,
           style: TextStyle(
@@ -40,11 +43,66 @@ class CommonWidgets {
             fontWeight: fontWeight,
           ),
         ),
+        style: ElevatedButton.styleFrom(backgroundColor: backgroundColor),
+        onPressed: onPressed,
       ),
     );
   }
 
-  //TextField
+  Widget commonText({
+    required String text,
+    double fontSize = 18,
+    FontWeight fontWeight = FontWeight.normal,
+    Color color = Colors.black, // Replace with AppColors.primaryColor if needed
+  }) {
+    return Text(
+      text,
+      style: TextStyle(
+        fontSize: fontSize,
+        fontWeight: fontWeight,
+        color: color,
+      ),
+    );
+  }
+
+  static Widget AppRoundedIconButton({
+    required VoidCallback onPressed,
+    required String label,
+    required String assetPath, // e.g. 'assets/icons/mic.png'
+    double iconSize = 24.0,
+    double fontSize = 16.0,
+    double width = 220.0,
+    double height = 50.0,
+    Color borderColor = Colors.black87,
+    Color textColor = Colors.black87,
+    Color backgroundColor = Colors.transparent,
+    FontWeight fontWeight = FontWeight.bold,
+  }) {
+    return SizedBox(
+      width: width,
+      height: height,
+      child: OutlinedButton.icon(
+        onPressed: onPressed,
+        icon: Image.asset(assetPath, width: iconSize, height: iconSize),
+        label: Text(
+          label,
+          style: TextStyle(
+            color: textColor,
+            fontSize: fontSize,
+            fontWeight: fontWeight,
+          ),
+        ),
+        style: OutlinedButton.styleFrom(
+          backgroundColor: backgroundColor,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(30),
+          ),
+          side: BorderSide(color: borderColor, width: 2.5),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        ),
+      ),
+    );
+  }
 
   Widget commonTextField({
     TextEditingController? controller,
@@ -53,11 +111,15 @@ class CommonWidgets {
     bool obscureText = false,
     TextInputType keyboardType = TextInputType.text,
     ValueChanged<String>? onSubmitted,
+    VoidCallback? onIconPressed,
+    String? assetPath,
   }) {
-    OutlineInputBorder _border(Color color, double width) => OutlineInputBorder(
-      borderRadius: BorderRadius.circular(25),
-      borderSide: BorderSide(color: color, width: width),
-    );
+    OutlineInputBorder _inputBorder(Color color, double width) {
+      return OutlineInputBorder(
+        borderRadius: BorderRadius.circular(15),
+        borderSide: BorderSide(color: color, width: width),
+      );
+    }
 
     return TextField(
       controller: controller,
@@ -67,32 +129,24 @@ class CommonWidgets {
       onSubmitted: onSubmitted,
       decoration: InputDecoration(
         hintText: hintText,
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 16,
-          vertical: 12,
+        hintStyle: const TextStyle(
+          color: Colors.grey,
+          fontSize: 20,
+          fontWeight: FontWeight.w500,
         ),
-        enabledBorder: _border(Colors.grey, 1.0),
-        focusedBorder: _border(
-          AppColors.primaryColor,
-          2.0,
-        ), // Replace with AppColors.primaryColor if needed
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 20,
+          vertical: 16,
+        ),
+        enabledBorder: _inputBorder(Colors.grey, 1.0),
+        focusedBorder: _inputBorder(AppColors.primaryColor, 2.0),
+        suffixIcon: assetPath != null
+            ? IconButton(
+                icon: Image.asset(assetPath, width: 30, height: 30),
+                onPressed: onIconPressed,
+              )
+            : null,
       ),
     );
   }
-
-  //Back Button
 }
-
-//Usage example
-
-//commonTextField(
-//   controller: _textController,
-//   hintText: 'Say or type something...',
-//   onSubmitted: (_) => _sendText(),
-// )
-
-// CommonWidgets.customButton(
-//   onPressed: () {
-//     print('Button Pressed');
-//   },
-// );

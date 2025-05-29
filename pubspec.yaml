@@ -39,6 +39,15 @@ dependencies:
   speech_to_text: ^7.0.0
   livekit_client: ^2.4.7
   flutter_dotenv: ^5.1.0
+  firebase_core: ^3.13.1
+  firebase_auth: ^5.5.4
+  just_audio: ^0.9.34
+  path_provider: ^2.0.15
+  web_socket_channel: ^3.0.3
+  just_audio_cache: ^0.1.2
+  permission_handler: ^12.0.0+1
+  audioplayers: ^6.4.0
+  flutter_sound: ^9.28.0
 
 dev_dependencies:
   flutter_test:
