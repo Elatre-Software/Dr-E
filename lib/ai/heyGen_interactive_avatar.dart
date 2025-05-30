@@ -670,170 +670,175 @@ class _HeyGenHomePageState extends State<HeyGenHomePage> {
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: Scaffold(
-        backgroundColor: AppColors.background,
-        body: Column(
-          children: [
-            Expanded(child: Center(child: _buildVideoWidget())),
-            if (_isListening)
-              const Padding(
-                padding: EdgeInsets.only(bottom: 10),
-                child: Text(
-                  "Listening...",
-                  style: TextStyle(fontSize: 16, color: Colors.grey),
-                ),
-                //  CircularProgressIndicator(),
-              ),
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.all(15),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Ask something to Dr E, He is here to help you with your dental queries.',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.blueAccent,
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    // Wrap(
-                    //   spacing: 10,
-                    //   runSpacing: 10,
-                    //   alignment: WrapAlignment.start,
-                    //   children: [
-                    //     CommonWidgets.AppRoundedIconButton(
-                    //       onPressed: () {
-                    //         _sendTextToSocket(preTextholisticPlan);
-                    //       },
-                    //       label: preTextholisticPlan,
-                    //       assetPath: AppAssets.searchIcon,
-                    //     ),
-                    //     CommonWidgets.AppRoundedIconButton(
-                    //       onPressed: () {
-                    //         _sendTextToSocket(preTextDental);
-                    //       },
-                    //       label: preTextDental,
-                    //       assetPath: AppAssets.searchIcon,
-                    //     ),
-                    //   ],
-                    // ),
-                  ],
-                ),
+    return Scaffold(
+      backgroundColor: AppColors.background,
+      body: Column(
+        children: [
+          Expanded(
+            child: Center(
+              child: Container(
+                margin: const EdgeInsets.only(top: 25),
+                child: _buildVideoWidget(),
               ),
             ),
-
-            // Expanded(
-            //   child: Padding(
-            //     padding: const EdgeInsets.all(15),
-            //     child: ListView.builder(
-            //       controller: _scrollController,
-            //       itemCount: _messages.length,
-            //       itemBuilder: (context, index) {
-            //         final msg = _messages[index];
-            //         final isUser = msg['sender'] == 'user';
-            //         return Align(
-            //           alignment: isUser
-            //               ? Alignment.centerRight
-            //               : Alignment.centerLeft,
-            //           child: Container(
-            //             padding: const EdgeInsets.symmetric(
-            //               vertical: 10,
-            //               horizontal: 16,
-            //             ),
-            //             margin: const EdgeInsets.symmetric(vertical: 4),
-            //             decoration: BoxDecoration(
-            //               color: isUser ? Colors.blue : Colors.grey[200],
-            //               borderRadius: BorderRadius.only(
-            //                 topLeft: const Radius.circular(16),
-            //                 topRight: const Radius.circular(16),
-            //                 bottomLeft: Radius.circular(isUser ? 16 : 0),
-            //                 bottomRight: Radius.circular(isUser ? 0 : 16),
-            //               ),
-            //             ),
-            //             child: Text(
-            //               msg['text'] ?? '',
-            //               style: TextStyle(
-            //                 color: isUser ? Colors.white : Colors.black87,
-            //                 fontSize: 16,
-            //               ),
-            //             ),
-            //           ),
-            //         );
-            //       },
-            //     ),
-            //   ),
-            // ),
-            // Container(
-            //   margin: const EdgeInsets.only(left: 15, right: 15),
-            //   child: Row(
-            //     mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            //     children: [
-            //       CommonWidgets.customButton(
-            //         assetIconPath: AppAssets.uploadIcon,
-            //         onPressed: () {},
-            //         label: 'Upload',
-            //       ),
-            //       CommonWidgets.AppRoundedIconButton(
-            //         onPressed: () {},
-            //         label: 'Start New Diagnosis',
-            //         assetPath: AppAssets.searchIcon,
-            //       ),
-            //     ],
-            //   ),
-            // ),
-            Padding(
+          ),
+          if (_isListening)
+            const Padding(
+              padding: EdgeInsets.only(bottom: 10),
+              child: Text(
+                "Listening...",
+                style: TextStyle(fontSize: 16, color: Colors.grey),
+              ),
+              //  CircularProgressIndicator(),
+            ),
+          Expanded(
+            child: Padding(
               padding: const EdgeInsets.all(15),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Expanded(
-                  //   child: TextField(
-                  //     controller: _sendMessageController,
-                  //     enabled: !_micEnabled,
-                  //     decoration: InputDecoration(
-                  //       hintText: 'Say or type a clinical command...',
-                  //       border: OutlineInputBorder(
-                  //         borderRadius: BorderRadius.circular(15),
-                  //       ),
-                  //     ),
-                  //     onSubmitted: (_) =>
-                  //         _sendTextToSocket(_sendMessageController.text),
-                  //   ),
-                  // ),
-                  // IconButton(
-                  //   icon: Icon(
-                  //     size: 30,
-                  //     _micEnabled ? Icons.mic : Icons.mic_off,
-                  //     color: Colors.blue,
-                  //   ),
-                  //   onPressed: () async => await _toggleRecording(),
-                  // ),
-                  Column(
-                    children: [
-                      IconButton(
-                        icon: Icon(
-                          _micEnabled ? Icons.mic : Icons.mic_off,
-                          color: _micEnabled ? Colors.blue : Colors.red,
-                          size: 35,
-                        ),
-                        onPressed: () async => await _toggleRecording(),
-                      ),
-                      Text(
-                        _micEnabled ? 'Listening...' : 'Listening stopped',
-                        style: TextStyle(fontSize: 16, color: Colors.blue),
-                      ),
-                    ],
+                  Text(
+                    'Ask something to Dr E, He is here to help you with your dental queries.',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.blueAccent,
+                    ),
                   ),
+                  const SizedBox(height: 10),
+                  // Wrap(
+                  //   spacing: 10,
+                  //   runSpacing: 10,
+                  //   alignment: WrapAlignment.start,
+                  //   children: [
+                  //     CommonWidgets.AppRoundedIconButton(
+                  //       onPressed: () {
+                  //         _sendTextToSocket(preTextholisticPlan);
+                  //       },
+                  //       label: preTextholisticPlan,
+                  //       assetPath: AppAssets.searchIcon,
+                  //     ),
+                  //     CommonWidgets.AppRoundedIconButton(
+                  //       onPressed: () {
+                  //         _sendTextToSocket(preTextDental);
+                  //       },
+                  //       label: preTextDental,
+                  //       assetPath: AppAssets.searchIcon,
+                  //     ),
+                  //   ],
+                  // ),
                 ],
               ),
             ),
-          ],
-        ),
+          ),
+
+          // Expanded(
+          //   child: Padding(
+          //     padding: const EdgeInsets.all(15),
+          //     child: ListView.builder(
+          //       controller: _scrollController,
+          //       itemCount: _messages.length,
+          //       itemBuilder: (context, index) {
+          //         final msg = _messages[index];
+          //         final isUser = msg['sender'] == 'user';
+          //         return Align(
+          //           alignment: isUser
+          //               ? Alignment.centerRight
+          //               : Alignment.centerLeft,
+          //           child: Container(
+          //             padding: const EdgeInsets.symmetric(
+          //               vertical: 10,
+          //               horizontal: 16,
+          //             ),
+          //             margin: const EdgeInsets.symmetric(vertical: 4),
+          //             decoration: BoxDecoration(
+          //               color: isUser ? Colors.blue : Colors.grey[200],
+          //               borderRadius: BorderRadius.only(
+          //                 topLeft: const Radius.circular(16),
+          //                 topRight: const Radius.circular(16),
+          //                 bottomLeft: Radius.circular(isUser ? 16 : 0),
+          //                 bottomRight: Radius.circular(isUser ? 0 : 16),
+          //               ),
+          //             ),
+          //             child: Text(
+          //               msg['text'] ?? '',
+          //               style: TextStyle(
+          //                 color: isUser ? Colors.white : Colors.black87,
+          //                 fontSize: 16,
+          //               ),
+          //             ),
+          //           ),
+          //         );
+          //       },
+          //     ),
+          //   ),
+          // ),
+          // Container(
+          //   margin: const EdgeInsets.only(left: 15, right: 15),
+          //   child: Row(
+          //     mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          //     children: [
+          //       CommonWidgets.customButton(
+          //         assetIconPath: AppAssets.uploadIcon,
+          //         onPressed: () {},
+          //         label: 'Upload',
+          //       ),
+          //       CommonWidgets.AppRoundedIconButton(
+          //         onPressed: () {},
+          //         label: 'Start New Diagnosis',
+          //         assetPath: AppAssets.searchIcon,
+          //       ),
+          //     ],
+          //   ),
+          // ),
+          Padding(
+            padding: const EdgeInsets.all(15),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                // Expanded(
+                //   child: TextField(
+                //     controller: _sendMessageController,
+                //     enabled: !_micEnabled,
+                //     decoration: InputDecoration(
+                //       hintText: 'Say or type a clinical command...',
+                //       border: OutlineInputBorder(
+                //         borderRadius: BorderRadius.circular(15),
+                //       ),
+                //     ),
+                //     onSubmitted: (_) =>
+                //         _sendTextToSocket(_sendMessageController.text),
+                //   ),
+                // ),
+                // IconButton(
+                //   icon: Icon(
+                //     size: 30,
+                //     _micEnabled ? Icons.mic : Icons.mic_off,
+                //     color: Colors.blue,
+                //   ),
+                //   onPressed: () async => await _toggleRecording(),
+                // ),
+                Column(
+                  children: [
+                    IconButton(
+                      icon: Icon(
+                        _micEnabled ? Icons.mic : Icons.mic_off,
+                        color: _micEnabled ? Colors.blue : Colors.red,
+                        size: 35,
+                      ),
+                      onPressed: () async => await _toggleRecording(),
+                    ),
+                    Text(
+                      _micEnabled ? 'Listening...' : 'Listening stopped',
+                      style: TextStyle(fontSize: 16, color: Colors.blue),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
