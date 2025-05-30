@@ -396,6 +396,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_application_1/constants/colors.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_sound/flutter_sound.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart' as rtc;
@@ -671,6 +672,7 @@ class _HeyGenHomePageState extends State<HeyGenHomePage> {
   Widget build(BuildContext context) {
     return SafeArea(
       child: Scaffold(
+        backgroundColor: AppColors.background,
         body: Column(
           children: [
             Expanded(child: Center(child: _buildVideoWidget())),
