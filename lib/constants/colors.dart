@@ -10,6 +10,8 @@ class AppColors {
   static const Color textSecondary = Color(0xFF757575);
   static const Color error = Color(0xFFFF5252);
   static const Color buttonColor = Color(0xFF0177ED);
-
-  // Add more as needed...
 }
+
+
+
+//Gradient for ions...

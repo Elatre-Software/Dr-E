@@ -13,33 +13,52 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: Scaffold(
-        backgroundColor: AppColors.background,
-        appBar: AppBar(
-          backgroundColor: AppColors.primaryColor,
-          title: Text(
-            "Home page",
-            style: TextStyle(
-              color: AppColors.background,
-              fontWeight: FontWeight.bold,
-              fontSize: 20,
-            ),
+    return Scaffold(
+      backgroundColor: AppColors.background,
+      appBar: AppBar(
+        backgroundColor: AppColors.primaryColor,
+        title: Text(
+          "Dr.E",
+          style: TextStyle(
+            color: AppColors.background,
+            fontWeight: FontWeight.bold,
+            fontSize: 20,
           ),
         ),
-        body: Center(child: Text('Welcome to Dr.E')),
-        floatingActionButton: FloatingActionButton(
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => const HeyGenHomePage()),
-            );
-            print('Floating Action Button Pressed');
-          },
-          child: Image.asset(AppAssets.aiButton, width: 40, height: 40),
-          backgroundColor: AppColors.buttonColor, // Optional: customize color
+      ),
+      body: Center(child: Text('Welcome to Dr.E')),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const HeyGenHomePage()),
+          );
+          print('Floating Action Button Pressed');
+        },
+        backgroundColor: Colors
+            .transparent, // or AppColors.buttonColor if you want a background
+        elevation: 4, // optional, for shadow
+        child: ClipOval(
+          child: Image.asset(AppAssets.appIcon2, fit: BoxFit.cover),
         ),
       ),
+
+      // floatingActionButton: FloatingActionButton(
+      //   onPressed: () {
+      //     Navigator.push(
+      //       context,
+      //       MaterialPageRoute(builder: (context) => const HeyGenHomePage()),
+      //     );
+      //     print('Floating Action Button Pressed');
+      //   },
+      //   child: Image.asset(
+      //     fit: BoxFit.fill,
+      //     AppAssets.appIcon,
+      //     width: 55,
+      //     height: 55,
+      //   ),
+      //   backgroundColor: AppColors.buttonColor, // Optional: customize color
+      // ),
     );
   }
 }
