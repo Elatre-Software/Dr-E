@@ -10,4 +10,6 @@ class AppAssets {
 
   //GIFS
   static const String aiGif = 'assets/gif/rounded_ai.gif';
+  static const String elevenLabsGif = 'assets/gif/eleven_labs.gif';
+  static const String elevenLabsGif2 = 'assets/gif/eleven-labs-unscreen.gif';
 }

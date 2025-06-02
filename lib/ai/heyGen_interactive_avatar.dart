@@ -8,7 +8,7 @@ import 'package:flutter_application_1/home_screen.dart';
 import 'package:flutter_application_1/widgets/widgets.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_sound/flutter_sound.dart';
-import 'package:flutter_webrtc/flutter_webrtc.dart' as rtc;
+// import 'package:flutter_webrtc/flutter_webrtc.dart' as rtc;
 import 'package:http/http.dart' as http;
 import 'package:livekit_client/livekit_client.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -29,8 +29,8 @@ class _HeyGenHomePageState extends State<HeyGenHomePage> {
 
   String? _sessionId;
   Room? _room;
-  RemoteVideoTrack? _videoTrack;
-  bool _isSessionActive = false;
+  // RemoteVideoTrack? _videoTrack;
+  // bool _isSessionActive = false;
   bool _micEnabled = true;
   bool isSocketReady = false;
   bool _isListening = false;
@@ -52,8 +52,7 @@ class _HeyGenHomePageState extends State<HeyGenHomePage> {
   void initState() {
     super.initState();
     _audioPlayer.onPlayerComplete.listen((_) async {
-      // When TTS finishes, re-enable microphone and start recording again
-      _isPlayingTTS = false;
+      // _isPlayingTTS = false;
       setState(() => _micEnabled = true);
       await _startRecording();
     });
@@ -106,7 +105,7 @@ class _HeyGenHomePageState extends State<HeyGenHomePage> {
       if (response['event'] == 'ready') {
         setState(() {
           isSocketReady = true;
-          _isSessionActive = true;
+          // _isSessionActive = true;
         });
         return;
       }
@@ -120,6 +119,7 @@ class _HeyGenHomePageState extends State<HeyGenHomePage> {
             _messages.add({'sender': 'user', 'text': userTranscript.trim()});
           });
           _scrollToBottom();
+          print("dat$response");
         }
         return;
       }
@@ -132,11 +132,9 @@ class _HeyGenHomePageState extends State<HeyGenHomePage> {
       if (aiText?.trim().isNotEmpty == true) {
         setState(() => _isListening = true);
         // small delay to simulate processing time
-        await Future.delayed(const Duration(milliseconds: 500));
+        // await Future.delayed(const Duration(milliseconds: 500));
         setState(() => _isListening = false);
-        setState(() {
-          _messages.add({'sender': 'avatar', 'text': aiText.trim()});
-        });
+
         _scrollToBottom();
         _speakText(aiText.trim());
       }
@@ -147,15 +145,15 @@ class _HeyGenHomePageState extends State<HeyGenHomePage> {
 
   Future<void> _speakText(String text) async {
     // If TTS is already playing, stop first
-    if (_isPlayingTTS) {
-      await _audioPlayer.stop();
-    }
+    // if (_isPlayingTTS) {
+    //   await _audioPlayer.stop();
+    // }
     final voiceId = elevenLabsVoiceId;
     final url = Uri.parse(
       "https://api.elevenlabs.io/v1/text-to-speech/$voiceId/stream",
     );
     try {
-      _isPlayingTTS = true;
+      // _isPlayingTTS = true;
       // Stop recording to prevent feedback
       if (_recorder.isRecording) {
         await _stopRecording();
@@ -171,7 +169,6 @@ class _HeyGenHomePageState extends State<HeyGenHomePage> {
         },
         body: jsonEncode({
           "text": text,
-          "model_id": "eleven_monolingual_v1",
           "voice_settings": {
             "speaker_boost": true,
             "style": "0.40",
@@ -182,15 +179,17 @@ class _HeyGenHomePageState extends State<HeyGenHomePage> {
       );
       if (response.statusCode == 200) {
         await _audioPlayer.play(ap.BytesSource(response.bodyBytes));
+        setState(() {
+          _messages.add({'sender': 'avatar', 'text': text.trim()});
+        });
       } else {
-        // If TTS fails, re-enable mic immediately
-        _isPlayingTTS = false;
+        // _isPlayingTTS = false;
         setState(() => _micEnabled = true);
         await _startRecording();
       }
     } catch (e) {
       debugPrint('TTS error: $e');
-      _isPlayingTTS = false;
+      // _isPlayingTTS = false;
       setState(() => _micEnabled = true);
       await _startRecording();
     }
@@ -209,7 +208,8 @@ class _HeyGenHomePageState extends State<HeyGenHomePage> {
     _audioStreamController = StreamController<Uint8List>();
 
     _audioStreamController!.stream.listen((buffer) {
-      if (buffer.isNotEmpty && !_isPlayingTTS) {
+      // if (buffer.isNotEmpty && !_isPlayingTTS) {
+      if (buffer.isNotEmpty) {
         final message = jsonEncode({"user_audio_chunk": base64Encode(buffer)});
         _channel?.sink.add(message);
       }
@@ -261,11 +261,12 @@ class _HeyGenHomePageState extends State<HeyGenHomePage> {
                 CommonWidgets.customButton(
                   onPressed: () {
                     _cleanupResources();
-                    Navigator.pushReplacement(
+                    Navigator.pushAndRemoveUntil(
                       context,
                       MaterialPageRoute(
                         builder: (context) => const HomeScreen(),
                       ),
+                      (route) => false,
                     );
                   },
                   label: 'Ok',
@@ -293,8 +294,8 @@ class _HeyGenHomePageState extends State<HeyGenHomePage> {
         _audioStreamController = null;
       }
       setState(() {
-        _isSessionActive = false;
-        _videoTrack = null;
+        // _isSessionActive = false;
+        // _videoTrack = null;
         isSocketReady = false;
         _sessionId = null;
       });
@@ -342,19 +343,14 @@ class _HeyGenHomePageState extends State<HeyGenHomePage> {
         child: Stack(
           alignment: Alignment.center,
           children: [
-            // 1) The circular (Oval) GIF background:
             ClipOval(
               child: Image.asset(
-                AppAssets.aiGif, // ← your GIF path, declared in pubspec.yaml
+                AppAssets.elevenLabsGif,
                 width: 300,
                 height: 300,
-                fit: BoxFit.cover,
+                fit: BoxFit.fill,
               ),
             ),
-
-            // 2) The “Listening [mic]” overlay, centered:
-            // Because Stack(alignment: Alignment.center) is in use, we can just place
-            // the pill widget directly here (no need for Positioned).
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               decoration: BoxDecoration(
@@ -396,7 +392,8 @@ class _HeyGenHomePageState extends State<HeyGenHomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      // backgroundColor: AppColors.background,
+      backgroundColor: Colors.white,
       body: Column(
         children: [
           Container(margin: const EdgeInsets.only(top: 15), child: elevenGif()),
@@ -432,7 +429,7 @@ class _HeyGenHomePageState extends State<HeyGenHomePage> {
                             backgroundColor: Colors.black,
                             child: ClipOval(
                               child: Image.asset(
-                                AppAssets.aiGif,
+                                AppAssets.elevenLabsGif,
                                 width: 24,
                                 height: 24,
                                 fit: BoxFit.cover,
@@ -482,10 +479,10 @@ class _HeyGenHomePageState extends State<HeyGenHomePage> {
                 Expanded(
                   child: TextField(
                     controller: _sendMessageController,
-                    // Disable typing while mic is on or TTS is playing
                     // enabled: !_micEnabled || !_isPlayingTTS,
                     enabled: false,
                     decoration: InputDecoration(
+                      fillColor: AppColors.background,
                       hintText: 'Say or type a clinical command...',
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(15),
@@ -501,9 +498,10 @@ class _HeyGenHomePageState extends State<HeyGenHomePage> {
                     color: Colors.black,
                     size: 35,
                   ),
-                  onPressed: _isPlayingTTS
-                      ? null
-                      : () async => await _toggleRecording(),
+                  // onPressed: _isPlayingTTS
+                  //     ? null
+                  //     : () async => await _toggleRecording(),
+                  onPressed: () async => await _toggleRecording(),
                 ),
                 const SizedBox(width: 8),
                 IconButton(
@@ -556,8 +554,8 @@ class _HeyGenHomePageState extends State<HeyGenHomePage> {
       }
       await _room?.disconnect();
       setState(() {
-        _isSessionActive = false;
-        _videoTrack = null;
+        // _isSessionActive = false;
+        // _videoTrack = null;
         isSocketReady = false;
         _sessionId = null;
       });
