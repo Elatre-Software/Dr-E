@@ -10,6 +10,12 @@ class AppColors {
   static const Color textSecondary = Color(0xFF757575);
   static const Color error = Color(0xFFFF5252);
   static const Color buttonColor = Color(0xFF0177ED);
+
+  static const List<Color> kDefaultGradientColors = [
+    Color(0xFFD1DFE7),
+    Color(0xFF658192),
+    Color(0xFF1E3A50),
+  ];
 }
 
 

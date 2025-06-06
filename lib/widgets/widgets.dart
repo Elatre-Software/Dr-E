@@ -149,4 +149,65 @@ class CommonWidgets {
       ),
     );
   }
+
+  Widget gradientButton({
+    required String text,
+    VoidCallback? onTap,
+    List<Color>? gradientColors,
+    double? height,
+    double width = 200,
+    double borderRadius = 25,
+    EdgeInsets? padding,
+    EdgeInsets? margin,
+    TextStyle? textStyle,
+    AlignmentGeometry? gradientBegin,
+    AlignmentGeometry? gradientEnd,
+  }) {
+    return Center(
+      child: Padding(
+        padding: margin ?? const EdgeInsets.symmetric(horizontal: 30),
+        child: Container(
+          height: height ?? 48,
+          width: width,
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors:
+                  gradientColors ??
+                  [
+                    const Color(0xFFD1DFE7),
+                    const Color(0xFF658192),
+                    const Color(0xFF1E3A50),
+                  ],
+              begin: gradientBegin ?? Alignment.topCenter,
+              end: gradientEnd ?? Alignment.bottomCenter,
+            ),
+            borderRadius: BorderRadius.circular(borderRadius ?? 8),
+          ),
+          child: Material(
+            color: Colors.transparent,
+            child: InkWell(
+              onTap: onTap,
+              borderRadius: BorderRadius.circular(borderRadius ?? 8),
+              child: Container(
+                padding:
+                    padding ??
+                    const EdgeInsets.symmetric(vertical: 12, horizontal: 24),
+                alignment: Alignment.center,
+                child: Text(
+                  text,
+                  style:
+                      textStyle ??
+                      const TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                      ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 }

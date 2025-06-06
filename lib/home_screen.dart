@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_application_1/ai/demo_page.dart';
 import 'package:flutter_application_1/ai/heyGen_interactive_avatar.dart';
 import 'package:flutter_application_1/constants/colors.dart';
-import 'package:flutter_application_1/constants/images.dart';
+import 'package:flutter_application_1/widgets/widgets.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -15,50 +16,53 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: AppBar(
-        backgroundColor: AppColors.primaryColor,
-        title: Text(
-          "Dr.E",
-          style: TextStyle(
-            color: AppColors.background,
-            fontWeight: FontWeight.bold,
-            fontSize: 20,
+      appBar: PreferredSize(
+        preferredSize: Size.fromHeight(kToolbarHeight),
+        child: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: AppColors.kDefaultGradientColors,
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+            ),
+          ),
+          child: AppBar(
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            title: Text(
+              'Welcome to Dr. E',
+              style: TextStyle(
+                fontSize: 16,
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
           ),
         ),
       ),
-      body: Center(child: Text('Welcome to Dr.E')),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const HeyGenHomePage()),
-          );
-          print('Floating Action Button Pressed');
-        },
-        backgroundColor: Colors
-            .transparent, // or AppColors.buttonColor if you want a background
-        elevation: 4, // optional, for shadow
-        child: ClipOval(
-          child: Image.asset(AppAssets.appIcon2, fit: BoxFit.cover),
+      body: Center(
+        child: CommonWidgets().gradientButton(
+          text: "Talk to Dr. E",
+          onTap: () {
+            Navigator.push(
+              context,
+              PageRouteBuilder(
+                pageBuilder: (context, animation, secondaryAnimation) =>
+                    const HeyGenHomePage(),
+                transitionDuration: const Duration(milliseconds: 500),
+                transitionsBuilder:
+                    (context, animation, secondaryAnimation, child) {
+                      return FadeTransition(opacity: animation, child: child);
+                    },
+              ),
+            );
+            // Navigator.push(
+            //   context,
+            //   MaterialPageRoute(builder: (context) => const HeyGenHomePage()),
+            // );
+          },
         ),
       ),
-
-      // floatingActionButton: FloatingActionButton(
-      //   onPressed: () {
-      //     Navigator.push(
-      //       context,
-      //       MaterialPageRoute(builder: (context) => const HeyGenHomePage()),
-      //     );
-      //     print('Floating Action Button Pressed');
-      //   },
-      //   child: Image.asset(
-      //     fit: BoxFit.fill,
-      //     AppAssets.appIcon,
-      //     width: 55,
-      //     height: 55,
-      //   ),
-      //   backgroundColor: AppColors.buttonColor, // Optional: customize color
-      // ),
     );
   }
 }
